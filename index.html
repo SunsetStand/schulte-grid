@@ -347,6 +347,7 @@ let errors = 0;
 let startTime = null;
 let timerInterval = null;
 let gameActive = false;
+let clickTimestamps = [];
 let history = JSON.parse(localStorage.getItem('schulte_history') || '[]');
 
 // ===== Grid Rendering =====
@@ -379,6 +380,7 @@ function startGame() {
   gameActive = true;
   startTime = Date.now();
 
+  clickTimestamps = [];
   document.getElementById('errors').textContent = '0';
   document.getElementById('nextNum').textContent = '1';
   document.getElementById('timer').textContent = '00:00.0';
@@ -408,6 +410,7 @@ function onCellClick(cell, num) {
 
   if (num === currentTarget) {
     cell.classList.add('found');
+    clickTimestamps.push({num: currentTarget, ms: Date.now() - startTime});
     currentTarget++;
     document.getElementById('nextNum').textContent = currentTarget <= 100 ? currentTarget : '✓';
 
@@ -464,6 +467,7 @@ function gameComplete() {
   document.getElementById('resultTime').textContent = elapsedStr + 's';
   document.getElementById('resultErrors').textContent = errors > 0 ? `${errors} 次错误` : '零错误！';
   document.getElementById('resultRating').textContent = getRating(elapsed, errors);
+  drawSpeedChart();
   document.getElementById('overlay').classList.add('active');
 
   document.getElementById('btnStart').disabled = false;
