@@ -187,7 +187,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     var chartW=W-pad.left-pad.right, chartH=H-pad.top-pad.bottom;
     var maxTime=Math.max.apply(null,segments.map(function(s){return s.time;}).concat([0.1]));
     var barW=chartW/segments.length-4;
-    var colors=['#2ecc71','#27ae60','#2ecc71','#f39c12','#f39c12','#e67e22','#e74c3c','#e74c3c','#c0392b','#c0392b'];
+    // Dynamic color: green (fast) → yellow (mid) → red (slow)
+    var times=segments.map(function(s){return s.time;});
+    var minT=Math.min.apply(null,times.filter(function(t){return t>0;}));
+    var maxT2=Math.max.apply(null,times.concat([0.1]));
+    function segColor(t){
+      if(t<=0)return '#444';
+      var ratio=(t-minT)/(Math.max(maxT2-minT,0.01));
+      var r,g;
+      if(ratio<0.5){r=Math.round(46+ratio*2*(243-46));g=Math.round(204-ratio*2*(204-156));}
+      else{r=Math.round(243+(ratio-0.5)*2*(231-243));g=Math.round(156-(ratio-0.5)*2*(156-76));}
+      return '#'+r.toString(16).padStart(2,'0')+g.toString(16).padStart(2,'0')+'4c';
+    }
     ctx.fillStyle='#0f0f1a'; ctx.fillRect(0,0,W,H);
     ctx.strokeStyle='#1a2a3a'; ctx.lineWidth=0.5;
     for(var i=0;i<=4;i++){var y=pad.top+chartH*i/4;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();}
@@ -197,8 +208,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       var barH=maxTime>0?(seg.time/maxTime)*chartH:0;
       var x=pad.left+i*(barW+4)+2;
       var y=pad.top+chartH-barH;
+      var clr=segColor(seg.time);
       var grad=ctx.createLinearGradient(x,y,x,pad.top+chartH);
-      grad.addColorStop(0,colors[i]); grad.addColorStop(1,colors[i]+'44');
+      grad.addColorStop(0,clr); grad.addColorStop(1,clr+'44');
       ctx.fillStyle=grad;
       var r=Math.min(4,barW/2);
       ctx.beginPath(); ctx.moveTo(x,pad.top+chartH); ctx.lineTo(x,y+r);
