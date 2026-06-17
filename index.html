@@ -2,332 +2,82 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>舒尔特方格 - 注意力训练</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #0f0f1a;
-  color: #e0e0e0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  user-select: none;
-}
-.container {
-  width: 100%;
-  max-width: 560px;
-  padding: 20px;
-}
-.header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-.header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 4px;
-}
-.header p {
-  font-size: 14px;
-  color: #888;
-}
-/* Grid */
-.grid-wrapper {
-  position: relative;
-  background: #1a1a2e;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(10, 1fr);
-  gap: 4px;
-  aspect-ratio: 1;
-}
-.cell {
-  background: #16213e;
-  border: 2px solid #2a3a5c;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(12px, 2.5vw, 20px);
-  font-weight: 700;
-  color: #e0e0e0;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  aspect-ratio: 1;
-}
-.cell:hover {
-  background: #1e3a5f;
-  border-color: #4a9eff;
-  transform: scale(1.05);
-}
-.cell:active {
-  transform: scale(0.95);
-}
-.cell.found {
-  background: #0d2818;
-  border-color: #2ecc71;
-  color: #2ecc71;
-  cursor: default;
-  pointer-events: none;
-}
-.cell.wrong {
-  background: #3d1010;
-  border-color: #e74c3c;
-  animation: shake 0.3s ease;
-}
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
-}
-/* Status bar */
-.status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-  padding: 12px 16px;
-  background: #1a1a2e;
-  border-radius: 12px;
-}
-.stat {
-  text-align: center;
-}
-.stat-label {
-  font-size: 12px;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-}
-.stat-value.timer {
-  color: #4a9eff;
-}
-.stat-value.next {
-  color: #f39c12;
-}
-/* Buttons */
-.buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-.btn {
-  flex: 1;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.btn-start {
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
-  color: #fff;
-}
-.btn-start:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(46,204,113,0.3); }
-.btn-reset {
-  background: #2a3a5c;
-  color: #e0e0e0;
-}
-.btn-reset:hover { background: #3a4a6c; }
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-/* Result overlay */
-.overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-.overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-.result-card {
-  background: #1a1a2e;
-  border-radius: 20px;
-  padding: 32px;
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
-  border: 1px solid #2a3a5c;
-}
-.result-title {
-  font-size: 22px;
-  color: #2ecc71;
-  margin-bottom: 16px;
-}
-.result-time {
-  font-size: 48px;
-  font-weight: 800;
-  color: #4a9eff;
-  margin-bottom: 8px;
-}
-.result-errors {
-  font-size: 16px;
-  color: #e74c3c;
-  margin-bottom: 20px;
-}
-.result-rating {
-  font-size: 18px;
-  color: #f39c12;
-  margin-bottom: 24px;
-  padding: 12px;
-  background: #16213e;
-  border-radius: 8px;
-}
-/* History */
-.history-section {
-  margin-top: 24px;
-  background: #1a1a2e;
-  border-radius: 16px;
-  padding: 16px;
-}
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.history-header h2 {
-  font-size: 18px;
-  color: #fff;
-}
-.history-header .btn-clear {
-  padding: 6px 14px;
-  font-size: 13px;
-  background: #3d1010;
-  color: #e74c3c;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.history-list {
-  max-height: 240px;
-  overflow-y: auto;
-}
-.history-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  background: #16213e;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: background 0.2s;
-}
-.history-item:hover { background: #1e3355; }
-.history-rank {
-  font-size: 22px;
-  font-weight: 800;
-  min-width: 36px;
-}
-.rank-gold { color: #f1c40f; }
-.rank-silver { color: #bdc3c7; }
-.rank-bronze { color: #e67e22; }
-.rank-normal { color: #7f8c8d; }
-.history-time {
-  font-size: 18px;
-  font-weight: 700;
-  color: #4a9eff;
-  font-variant-numeric: tabular-nums;
-}
-.history-date {
-  font-size: 12px;
-  color: #888;
-}
-.history-errors {
-  font-size: 12px;
-  color: #e74c3c;
-}
-.best-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #f1c40f, #f39c12);
-  color: #000;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  vertical-align: middle;
-  margin-left: 4px;
-}
-.empty-history {
-  text-align: center;
-  color: #666;
-  padding: 20px;
-  font-size: 14px;
-}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0e0;display:flex;justify-content:center;align-items:center;min-height:100vh;user-select:none;-webkit-user-select:none}
+.container{width:100%;max-width:560px;padding:20px}
+.header{text-align:center;margin-bottom:24px}
+.header h1{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
+.header p{font-size:14px;color:#888}
+.grid-wrapper{position:relative;background:#1a1a2e;border-radius:16px;padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);gap:4px;aspect-ratio:1}
+.cell{background:#16213e;border:2px solid #2a3a5c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:clamp(12px,2.5vw,20px);font-weight:700;color:#e0e0e0;cursor:pointer;transition:all .15s ease;aspect-ratio:1;-webkit-tap-highlight-color:transparent}
+.cell:hover{background:#1e3a5f;border-color:#4a9eff;transform:scale(1.05)}
+.cell:active{transform:scale(.95)}
+.cell.found{background:#0d2818;border-color:#2ecc71;color:#2ecc71;cursor:default;pointer-events:none}
+.cell.wrong{background:#3d1010;border-color:#e74c3c;animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.status{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding:12px 16px;background:#1a1a2e;border-radius:12px}
+.stat{text-align:center}
+.stat-label{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.stat-value{font-size:24px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.stat-value.timer{color:#4a9eff}
+.stat-value.next{color:#f39c12}
+.buttons{display:flex;gap:12px;margin-top:16px}
+.btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s ease}
+.btn-start{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(46,204,113,.3)}
+.btn-reset{background:#2a3a5c;color:#e0e0e0}
+.btn-reset:hover{background:#3a4a6c}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.overlay.active{opacity:1;pointer-events:auto}
+.result-card{background:#1a1a2e;border-radius:20px;padding:24px;text-align:center;max-width:440px;width:92%;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.5);border:1px solid #2a3a5c}
+.result-title{font-size:22px;color:#2ecc71;margin-bottom:16px}
+.result-time{font-size:48px;font-weight:800;color:#4a9eff;margin-bottom:8px}
+.result-errors{font-size:16px;color:#e74c3c;margin-bottom:12px}
+.result-rating{font-size:18px;color:#f39c12;margin-bottom:16px;padding:12px;background:#16213e;border-radius:8px}
+.speed-chart{width:100%;border-radius:8px;background:#0f0f1a;margin-bottom:6px}
+.speed-legend{display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;color:#888;padding:0 4px}
+.speed-insight{font-size:14px;color:#ccc;padding:10px 12px;background:#1a1010;border-radius:8px;text-align:left;line-height:1.8;margin-bottom:12px}
+.speed-insight b{color:#f39c12}
+.history-section{margin-top:24px;background:#1a1a2e;border-radius:16px;padding:16px}
+.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.history-header h2{font-size:18px;color:#fff}
+.btn-clear{padding:6px 14px;font-size:13px;background:#3d1010;color:#e74c3c;border:none;border-radius:8px;cursor:pointer}
+.history-list{max-height:240px;overflow-y:auto}
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#16213e;border-radius:8px;margin-bottom:8px}
+.history-item:hover{background:#1e3355}
+.history-rank{font-size:22px;font-weight:800;min-width:36px}
+.rank-gold{color:#f1c40f}.rank-silver{color:#bdc3c7}.rank-bronze{color:#e67e22}.rank-normal{color:#7f8c8d}
+.history-time{font-size:18px;font-weight:700;color:#4a9eff;font-variant-numeric:tabular-nums}
+.history-date{font-size:12px;color:#888}
+.history-errors{font-size:12px;color:#e74c3c}
+.best-badge{display:inline-block;background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:4px}
+.empty-history{text-align:center;color:#666;padding:20px;font-size:14px}
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <h1>🧠 舒尔特方格</h1>
-    <p>10 × 10 · 按顺序点击 1 → 100</p>
-  </div>
-
-  <div class="grid-wrapper">
-    <div class="grid" id="grid"></div>
-  </div>
-
+  <div class="header"><h1>🧠 舒尔特方格</h1><p>10×10 · 按顺序点击 1→100</p></div>
+  <div class="grid-wrapper"><div class="grid" id="grid"></div></div>
   <div class="status">
-    <div class="stat">
-      <div class="stat-label">⏱ 用时</div>
-      <div class="stat-value timer" id="timer">00:00.0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">🎯 下一个</div>
-      <div class="stat-value next" id="nextNum">1</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">❌ 错误</div>
-      <div class="stat-value" id="errors" style="color:#e74c3c">0</div>
-    </div>
+    <div class="stat"><div class="stat-label">⏱ 用时</div><div class="stat-value timer" id="timer">00:00.0</div></div>
+    <div class="stat"><div class="stat-label">🎯 下一个</div><div class="stat-value next" id="nextNum">1</div></div>
+    <div class="stat"><div class="stat-label">❌ 错误</div><div class="stat-value" id="errors" style="color:#e74c3c">0</div></div>
   </div>
-
   <div class="buttons">
-    <button class="btn btn-start" id="btnStart" onclick="startGame()">▶ 开始</button>
-    <button class="btn btn-reset" id="btnReset" onclick="resetGame()" disabled>↺ 重新开始</button>
+    <button class="btn btn-start" id="btnStart">▶ 开始</button>
+    <button class="btn btn-reset" id="btnReset" disabled>↺ 重新开始</button>
   </div>
-
   <div class="history-section">
-    <div class="history-header">
-      <h2>📊 历史记录</h2>
-      <button class="btn-clear" onclick="clearHistory()">清空</button>
-    </div>
-    <div class="history-list" id="historyList">
-      <div class="empty-history">还没有记录，开始训练吧！</div>
-    </div>
+    <div class="history-header"><h2>📊 历史记录</h2><button class="btn-clear" id="btnClear">清空</button></div>
+    <div class="history-list" id="historyList"><div class="empty-history">还没有记录，开始训练吧！</div></div>
   </div>
 </div>
 
-<!-- Result overlay -->
 <div class="overlay" id="overlay">
   <div class="result-card">
     <div class="result-title">🎉 完成！</div>
@@ -337,322 +87,186 @@ body {
     <canvas class="speed-chart" id="speedChart" width="360" height="200"></canvas>
     <div class="speed-legend" id="speedLegend"></div>
     <div class="speed-insight" id="speedInsight"></div>
-    <button class="btn btn-start" onclick="closeOverlay()" style="width:100%;margin-top:12px">👍 好的</button>
+    <button class="btn btn-start" id="btnClose" style="width:100%">👍 好的</button>
   </div>
 </div>
 
 <script>
-// ===== Game State =====
-let gridSize = 10;
-let numbers = [];
-let currentTarget = 1;
-let errors = 0;
-let startTime = null;
-let timerInterval = null;
-let gameActive = false;
-let clickTimestamps = [];
-let history = JSON.parse(localStorage.getItem('schulte_history') || '[]');
+(function(){
+  var gridSize=10, numbers=[], currentTarget=1, errors=0, startTime=null, timerInterval=null, gameActive=false;
+  var clickTimestamps=[];
+  var history=JSON.parse(localStorage.getItem('schulte_history')||'[]');
 
-// ===== Grid Rendering =====
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a}
+
+  function renderGrid(){
+    var g=document.getElementById('grid');
+    g.innerHTML='';
+    numbers=shuffle(Array.from({length:100},function(_,i){return i+1}));
+    numbers.forEach(function(n){
+      var c=document.createElement('div');
+      c.className='cell';
+      c.textContent=n;
+      c.addEventListener('click',function(){onCellClick(c,n);});
+      g.appendChild(c);
+    });
   }
-  return arr;
-}
 
-function renderGrid() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  numbers = shuffle(Array.from({length: 100}, (_, i) => i + 1));
-  numbers.forEach((n, idx) => {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    cell.textContent = n;
-    cell.dataset.num = n;
-    cell.addEventListener('click', () => onCellClick(cell, n));
-    grid.appendChild(cell);
-  });
-}
+  function startGame(){
+    currentTarget=1; errors=0; gameActive=true; startTime=Date.now(); clickTimestamps=[];
+    document.getElementById('errors').textContent='0';
+    document.getElementById('nextNum').textContent='1';
+    document.getElementById('timer').textContent='00:00.0';
+    document.getElementById('btnStart').disabled=true;
+    document.getElementById('btnReset').disabled=false;
+    renderGrid();
+    if(timerInterval)clearInterval(timerInterval);
+    timerInterval=setInterval(updateTimer,100);
+  }
 
-// ===== Game Logic =====
-function startGame() {
-  currentTarget = 1;
-  errors = 0;
-  gameActive = true;
-  startTime = Date.now();
+  function resetGame(){
+    if(timerInterval)clearInterval(timerInterval);
+    gameActive=false; currentTarget=1; errors=0; clickTimestamps=[];
+    document.getElementById('timer').textContent='00:00.0';
+    document.getElementById('nextNum').textContent='1';
+    document.getElementById('errors').textContent='0';
+    document.getElementById('btnStart').disabled=false;
+    document.getElementById('btnReset').disabled=true;
+    renderGrid();
+  }
 
-  clickTimestamps = [];
-  document.getElementById('errors').textContent = '0';
-  document.getElementById('nextNum').textContent = '1';
-  document.getElementById('timer').textContent = '00:00.0';
-  document.getElementById('btnStart').disabled = true;
-  document.getElementById('btnReset').disabled = false;
-
-  renderGrid();
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(updateTimer, 100);
-}
-
-function resetGame() {
-  if (timerInterval) clearInterval(timerInterval);
-  gameActive = false;
-  currentTarget = 1;
-  errors = 0;
-  document.getElementById('timer').textContent = '00:00.0';
-  document.getElementById('nextNum').textContent = '1';
-  document.getElementById('errors').textContent = '0';
-  document.getElementById('btnStart').disabled = false;
-  document.getElementById('btnReset').disabled = true;
-  renderGrid();
-}
-
-function onCellClick(cell, num) {
-  if (!gameActive) return;
-
-  if (num === currentTarget) {
-    cell.classList.add('found');
-    clickTimestamps.push({num: currentTarget, ms: Date.now() - startTime});
-    currentTarget++;
-    document.getElementById('nextNum').textContent = currentTarget <= 100 ? currentTarget : '✓';
-
-    if (currentTarget > 100) {
-      gameComplete();
+  function onCellClick(cell,num){
+    if(!gameActive)return;
+    if(num===currentTarget){
+      cell.classList.add('found');
+      clickTimestamps.push({num:currentTarget,ms:Date.now()-startTime});
+      currentTarget++;
+      document.getElementById('nextNum').textContent=currentTarget<=100?currentTarget:'✓';
+      if(currentTarget>100)gameComplete();
+    }else if(num>currentTarget){
+      errors++;
+      document.getElementById('errors').textContent=errors;
+      cell.classList.add('wrong');
+      setTimeout(function(){cell.classList.remove('wrong');},300);
     }
-  } else if (num > currentTarget) {
-    errors++;
-    document.getElementById('errors').textContent = errors;
-    cell.classList.add('wrong');
-    setTimeout(() => cell.classList.remove('wrong'), 300);
-  }
-  // Clicking a number less than current target does nothing (already found)
-}
-
-function updateTimer() {
-  if (!gameActive || !startTime) return;
-  const elapsed = (Date.now() - startTime) / 1000;
-  const mins = Math.floor(elapsed / 60);
-  const secs = Math.floor(elapsed % 60);
-  const tenths = Math.floor((elapsed % 1) * 10);
-  document.getElementById('timer').textContent =
-    `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${tenths}`;
-}
-
-function getRating(seconds, errs) {
-  if (seconds < 120) return errs === 0 ? '🏆 超凡专注！你是闪电本人 ⚡' : '🌟 极速！几乎完美';
-  if (seconds < 180) return errs === 0 ? '🔥 注意力非常集中！' : '💪 速度很快，再提高准确度';
-  if (seconds < 240) return '👍 不错的专注力，继续练习！';
-  if (seconds < 300) return '📚 正常水平，坚持训练会更快';
-  if (seconds < 360) return '🐢 需要多加练习哦';
-  return '💤 是不是分心了？再试一次！';
-}
-
-function gameComplete() {
-  if (timerInterval) clearInterval(timerInterval);
-  gameActive = false;
-  const elapsed = (Date.now() - startTime) / 1000;
-  const elapsedStr = elapsed.toFixed(1);
-
-  // Save to history
-  const record = {
-    time: parseFloat(elapsedStr),
-    errors: errors,
-    date: new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
-  };
-  history.push(record);
-  history.sort((a, b) => a.time - b.time);
-  if (history.length > 100) history = history.slice(0, 100);
-  localStorage.setItem('schulte_history', JSON.stringify(history));
-  renderHistory();
-
-  // Show result
-  document.getElementById('resultTime').textContent = elapsedStr + 's';
-  document.getElementById('resultErrors').textContent = errors > 0 ? `${errors} 次错误` : '零错误！';
-  document.getElementById('resultRating').textContent = getRating(elapsed, errors);
-  drawSpeedChart();
-  document.getElementById('overlay').classList.add('active');
-
-  document.getElementById('btnStart').disabled = false;
-  document.getElementById('btnReset').disabled = true;
-}
-
-function closeOverlay() {
-  document.getElementById('overlay').classList.remove('active');
-}
-
-// ===== History =====
-function renderHistory() {
-  const list = document.getElementById('historyList');
-  if (history.length === 0) {
-    list.innerHTML = '<div class="empty-history">还没有记录，开始训练吧！</div>';
-    return;
   }
 
-  const best = history[0].time;
-  const recent = history.slice(-20).reverse(); // show last 20, newest first
-  // Actually, let's show all sorted by time (best first) with rank
-  list.innerHTML = history.slice(0, 30).map((r, i) => {
-    let rankClass = 'rank-normal';
-    if (i === 0) rankClass = 'rank-gold';
-    else if (i === 1) rankClass = 'rank-silver';
-    else if (i === 2) rankClass = 'rank-bronze';
+  function updateTimer(){
+    if(!gameActive||!startTime)return;
+    var e=(Date.now()-startTime)/1000;
+    var m=Math.floor(e/60), s=Math.floor(e%60), t=Math.floor((e%1)*10);
+    document.getElementById('timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+t;
+  }
 
-    let timeDisplay = r.time.toFixed(1) + 's';
-    let bestBadge = '';
-    if (r.time === best) bestBadge = '<span class="best-badge">PB</span>';
+  function getRating(s,err){
+    if(s<120)return err===0?'🏆 超凡专注！闪电本人 ⚡':'🌟 极速！几乎完美';
+    if(s<180)return err===0?'🔥 注意力非常集中！':'💪 速度很快，再提高准确度';
+    if(s<240)return'👍 不错，继续练习！';
+    if(s<300)return'📚 正常水平，坚持训练';
+    return'🐢 多练练会更快';
+  }
 
-    return `
-      <div class="history-item">
-        <div class="history-rank ${rankClass}">#${i + 1}</div>
-        <div class="history-time">${timeDisplay}${bestBadge}</div>
-        <div class="history-errors">${r.errors > 0 ? '❌×' + r.errors : '✅'}</div>
-        <div class="history-date">${r.date}</div>
-      </div>
-    `;
-  }).join('');
-}
+  function drawSpeedChart(){
+    var canvas=document.getElementById('speedChart');
+    if(!canvas)return;
+    if(clickTimestamps.length<2)return;
+    var segSize=10, segments=[];
+    for(var s=0;s<10;s++){
+      var start=s*segSize+1, end=start+segSize-1;
+      var clicks=clickTimestamps.filter(function(c){return c.num>=start&&c.num<=end;});
+      if(clicks.length>=2){
+        var segTime=(clicks[clicks.length-1].ms-clicks[0].ms)/1000;
+        segments.push({label:start+'\u2013'+end, time:segTime});
+      }else{
+        segments.push({label:start+'\u2013'+end, time:0});
+      }
+    }
+    var ctx=canvas.getContext('2d');
+    var W=canvas.width, H=canvas.height;
+    var pad={top:20,right:16,bottom:32,left:44};
+    var chartW=W-pad.left-pad.right, chartH=H-pad.top-pad.bottom;
+    var maxTime=Math.max.apply(null,segments.map(function(s){return s.time;}).concat([0.1]));
+    var barW=chartW/segments.length-4;
+    var colors=['#2ecc71','#27ae60','#2ecc71','#f39c12','#f39c12','#e67e22','#e74c3c','#e74c3c','#c0392b','#c0392b'];
+    ctx.fillStyle='#0f0f1a'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='#1a2a3a'; ctx.lineWidth=0.5;
+    for(var i=0;i<=4;i++){var y=pad.top+chartH*i/4;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();}
+    ctx.fillStyle='#888'; ctx.font='11px sans-serif'; ctx.textAlign='right';
+    for(var i=0;i<=4;i++){var val=maxTime*(4-i)/4;ctx.fillText(val.toFixed(1)+'s',pad.left-6,pad.top+chartH*i/4+4);}
+    segments.forEach(function(seg,i){
+      var barH=maxTime>0?(seg.time/maxTime)*chartH:0;
+      var x=pad.left+i*(barW+4)+2;
+      var y=pad.top+chartH-barH;
+      var grad=ctx.createLinearGradient(x,y,x,pad.top+chartH);
+      grad.addColorStop(0,colors[i]); grad.addColorStop(1,colors[i]+'44');
+      ctx.fillStyle=grad;
+      var r=Math.min(4,barW/2);
+      ctx.beginPath(); ctx.moveTo(x,pad.top+chartH); ctx.lineTo(x,y+r);
+      ctx.quadraticCurveTo(x,y,x+r,y); ctx.lineTo(x+barW-r,y);
+      ctx.quadraticCurveTo(x+barW,y,x+barW,y+r); ctx.lineTo(x+barW,pad.top+chartH);
+      ctx.closePath(); ctx.fill();
+      if(seg.time>0){ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.textAlign='center';var lY=barH>18?y+14:y-6;ctx.fillText(seg.time.toFixed(1)+'s',x+barW/2,lY);}
+    });
+    ctx.fillStyle='#aaa'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+    segments.forEach(function(seg,i){var x=pad.left+i*(barW+4)+2+barW/2;ctx.fillText(seg.label,x,pad.top+chartH+14);});
+    ctx.strokeStyle='#555'; ctx.lineWidth=1; ctx.beginPath();
+    ctx.moveTo(pad.left,pad.top); ctx.lineTo(pad.left,pad.top+chartH); ctx.lineTo(W-pad.right,pad.top+chartH); ctx.stroke();
+    document.getElementById('speedLegend').innerHTML='<span style="color:#2ecc71">🟢 快</span><span style="color:#f39c12">🟡 中</span><span style="color:#e74c3c">🔴 慢</span>';
+    var slowest=segments.reduce(function(a,b){return a.time>b.time?a:b;});
+    var fastest=segments.reduce(function(a,b){return a.time<b.time&&b.time>0?a:b;},segments[0]);
+    var avg=segments.reduce(function(s,x){return s+x.time;},0)/segments.length;
+    document.getElementById('speedInsight').innerHTML='🐢 最慢区间：<b>'+slowest.label+'</b>（'+slowest.time.toFixed(1)+'s）<br>🐇 最快区间：<b>'+fastest.label+'</b>（'+fastest.time.toFixed(1)+'s）<br>📊 平均每段：'+avg.toFixed(1)+'s | 最慢/最快='+(slowest.time/Math.max(fastest.time,0.01)).toFixed(1)+'×';
+  }
 
-function clearHistory() {
-  if (confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
-    history = [];
-    localStorage.setItem('schulte_history', '[]');
+  function gameComplete(){
+    if(timerInterval)clearInterval(timerInterval);
+    gameActive=false;
+    var elapsed=(Date.now()-startTime)/1000;
+    var elapsedStr=elapsed.toFixed(1);
+    var record={time:parseFloat(elapsedStr),errors:errors,date:new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'})};
+    history.push(record);
+    history.sort(function(a,b){return a.time-b.time;});
+    if(history.length>100)history=history.slice(0,100);
+    localStorage.setItem('schulte_history',JSON.stringify(history));
     renderHistory();
-  }
-}
-
-// ===== Speed Chart =====
-function drawSpeedChart() {
-  const segSize = 10; // 10 numbers per segment
-  const segments = [];
-  for (let s = 0; s < 10; s++) {
-    const start = s * segSize + 1;
-    const end = start + segSize - 1;
-    const clicks = clickTimestamps.filter(c => c.num >= start && c.num <= end);
-    if (clicks.length >= 2) {
-      const segTime = (clicks[clicks.length - 1].ms - clicks[0].ms) / 1000;
-      segments.push({label: `${start}–${end}`, time: segTime, avg: segTime / (clicks.length - 1)});
-    } else if (clicks.length === 1) {
-      segments.push({label: `${start}–${end}`, time: 0, avg: 0});
-    } else {
-      segments.push({label: `${start}–${end}`, time: 0, avg: 0});
-    }
+    document.getElementById('resultTime').textContent=elapsedStr+'s';
+    document.getElementById('resultErrors').textContent=errors>0?errors+' 次错误':'零错误！';
+    document.getElementById('resultRating').textContent=getRating(elapsed,errors);
+    drawSpeedChart();
+    document.getElementById('overlay').classList.add('active');
+    document.getElementById('btnStart').disabled=false;
+    document.getElementById('btnReset').disabled=true;
   }
 
-  const canvas = document.getElementById('speedChart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width;
-  const H = canvas.height;
-  const pad = {top: 20, right: 16, bottom: 32, left: 44};
-  const chartW = W - pad.left - pad.right;
-  const chartH = H - pad.top - pad.bottom;
+  function closeOverlay(){document.getElementById('overlay').classList.remove('active');}
 
-  const maxTime = Math.max(...segments.map(s => s.time), 0.1);
-  const barW = chartW / segments.length - 4;
-  const colors = ['#2ecc71', '#27ae60', '#2ecc71', '#f39c12', '#f39c12', '#e67e22', '#e74c3c', '#e74c3c', '#c0392b', '#c0392b'];
-
-  // Clear
-  ctx.fillStyle = '#0f0f1a';
-  ctx.fillRect(0, 0, W, H);
-
-  // Grid lines
-  ctx.strokeStyle = '#1a2a3a';
-  ctx.lineWidth = 0.5;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + chartH * i / 4;
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(W - pad.right, y);
-    ctx.stroke();
+  function renderHistory(){
+    var list=document.getElementById('historyList');
+    if(history.length===0){list.innerHTML='<div class="empty-history">还没有记录，开始训练吧！</div>';return;}
+    var best=history[0].time;
+    list.innerHTML=history.slice(0,30).map(function(r,i){
+      var rc='rank-normal';
+      if(i===0)rc='rank-gold';else if(i===1)rc='rank-silver';else if(i===2)rc='rank-bronze';
+      var bb=r.time===best?'<span class="best-badge">PB</span>':'';
+      return '<div class="history-item"><div class="history-rank '+rc+'">#'+(i+1)+'</div><div class="history-time">'+r.time.toFixed(1)+'s'+bb+'</div><div class="history-errors">'+(r.errors>0?'❌×'+r.errors:'✅')+'</div><div class="history-date">'+r.date+'</div></div>';
+    }).join('');
   }
 
-  // Y-axis labels
-  ctx.fillStyle = '#888';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'right';
-  for (let i = 0; i <= 4; i++) {
-    const val = maxTime * (4 - i) / 4;
-    ctx.fillText(val.toFixed(1) + 's', pad.left - 6, pad.top + chartH * i / 4 + 4);
-  }
+  function clearHistory(){if(confirm('确定清空所有历史记录？')){history=[];localStorage.setItem('schulte_history','[]');renderHistory();}}
 
-  // Bars
-  segments.forEach((seg, i) => {
-    const barH = maxTime > 0 ? (seg.time / maxTime) * chartH : 0;
-    const x = pad.left + i * (barW + 4) + 2;
-    const y = pad.top + chartH - barH;
+  document.getElementById('btnStart').addEventListener('click',startGame);
+  document.getElementById('btnReset').addEventListener('click',resetGame);
+  document.getElementById('btnClose').addEventListener('click',closeOverlay);
+  document.getElementById('btnClear').addEventListener('click',clearHistory);
 
-    // Gradient
-    const grad = ctx.createLinearGradient(x, y, x, pad.top + chartH);
-    grad.addColorStop(0, colors[i]);
-    grad.addColorStop(1, colors[i] + '44');
-    ctx.fillStyle = grad;
-
-    // Rounded top
-    const r = Math.min(4, barW / 2);
-    ctx.beginPath();
-    ctx.moveTo(x, pad.top + chartH);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.lineTo(x + barW - r, y);
-    ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
-    ctx.lineTo(x + barW, pad.top + chartH);
-    ctx.closePath();
-    ctx.fill();
-
-    // Time label on bar
-    if (seg.time > 0) {
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 10px sans-serif';
-      ctx.textAlign = 'center';
-      const labelY = barH > 18 ? y + 14 : y - 6;
-      ctx.fillText(seg.time.toFixed(1) + 's', x + barW / 2, labelY);
-    }
+  document.addEventListener('keydown',function(e){
+    if(e.code==='Space'&&!gameActive){e.preventDefault();startGame();}
+    else if(e.code==='KeyR'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();if(gameActive)resetGame();}
   });
 
-  // X-axis labels
-  ctx.fillStyle = '#aaa';
-  ctx.font = '10px sans-serif';
-  ctx.textAlign = 'center';
-  segments.forEach((seg, i) => {
-    const x = pad.left + i * (barW + 4) + 2 + barW / 2;
-    ctx.fillText(seg.label, x, pad.top + chartH + 14);
-  });
-
-  // Axes
-  ctx.strokeStyle = '#555';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(pad.left, pad.top);
-  ctx.lineTo(pad.left, pad.top + chartH);
-  ctx.lineTo(W - pad.right, pad.top + chartH);
-  ctx.stroke();
-
-  // Insight
-  const slowest = segments.reduce((a, b) => a.time > b.time ? a : b);
-  const fastest = segments.reduce((a, b) => a.time < b.time && b.time > 0 ? a : b, segments[0]);
-  const avgSeg = segments.reduce((s, x) => s + x.time, 0) / segments.length;
-  document.getElementById('speedInsight').innerHTML =
-    `🐢 最慢区间：<b>${slowest.label}</b>（${slowest.time.toFixed(1)}s）<br>` +
-    `🐇 最快区间：<b>${fastest.label}</b>（${fastest.time.toFixed(1)}s）<br>` +
-    `📊 平均每段：${avgSeg.toFixed(1)}s | 最慢/最快 = ${(slowest.time / Math.max(fastest.time, 0.01)).toFixed(1)}×`;
-}
-
-// ===== Keyboard support =====
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && !gameActive) {
-    e.preventDefault();
-    startGame();
-  } else if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
-    e.preventDefault();
-    if (gameActive) resetGame();
-    else if (currentTarget > 100) startGame();
-  }
-});
-
-// ===== Init =====
-renderGrid();
-renderHistory();
+  renderGrid();
+  renderHistory();
+})();
 </script>
 </body>
 </html>
